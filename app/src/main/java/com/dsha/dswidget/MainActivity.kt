@@ -1,6 +1,9 @@
 package com.dsha.dswidget
 
+import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
@@ -15,10 +18,14 @@ class MainActivity : Activity() {
 
     private lateinit var keyInput: EditText
     private lateinit var status: TextView
+    private lateinit var tierView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         title = "DeepSeek 余额"
+
+        Notifications.ensureChannel(this)
+        askNotificationPermission()
 
         val pad = (20 * resources.displayMetrics.density).toInt()
         val root = LinearLayout(this).apply {
@@ -48,6 +55,13 @@ class MainActivity : Activity() {
         }
         root.addView(keyInput)
 
+        tierView = TextView(this).apply {
+            text = tierText()
+            textSize = 13f
+            setPadding(0, pad, 0, pad)
+        }
+        root.addView(tierView)
+
         root.addView(Button(this).apply {
             text = "保存并刷新"
             layoutParams = LinearLayout.LayoutParams(
@@ -60,6 +74,7 @@ class MainActivity : Activity() {
                 RefreshScheduler.schedule(this@MainActivity)
                 BalanceWidget.refreshAsync(this@MainActivity)
                 status.text = "已保存。等几秒后回桌面看小组件。"
+                tierView.text = tierText()
             }
         })
 
@@ -68,6 +83,7 @@ class MainActivity : Activity() {
             setOnClickListener {
                 BalanceWidget.refreshAsync(this@MainActivity)
                 status.text = "已触发刷新。"
+                tierView.text = tierText()
             }
         })
 
@@ -80,5 +96,23 @@ class MainActivity : Activity() {
         root.addView(status)
 
         setContentView(root)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::tierView.isInitialized) tierView.text = tierText()
+    }
+
+    private fun tierText(): String {
+        val t = Billing.now()
+        return "当前计费：${t.text}\n（谷价期＝北京时间 00:30–08:30，进入时会通知你）"
+    }
+
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
+            }
+        }
     }
 }

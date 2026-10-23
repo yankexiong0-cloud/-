@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.widget.RemoteViews
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -20,6 +21,7 @@ class BalanceWidget : AppWidgetProvider() {
 
     override fun onEnabled(context: Context) {
         RefreshScheduler.schedule(context.applicationContext)
+        Notifications.ensureChannel(context.applicationContext)
         refreshAsync(context.applicationContext)
     }
 
@@ -41,7 +43,28 @@ class BalanceWidget : AppWidgetProvider() {
             thread {
                 val result = BalanceApi.fetch(Prefs.apiKey(context))
                 render(context, result)
+                maybeNotifyOffPeak(context, result)
             }
+        }
+
+        /** 进入谷价期时提醒一次（每天最多一次） */
+        private fun maybeNotifyOffPeak(context: Context, result: BalanceApi.Result) {
+            val tier = Billing.now()
+            if (!tier.offPeak) return
+            val today = Billing.beijingDate()
+            if (Prefs.lastOffPeakNotice(context) == today) return
+            Prefs.setLastOffPeakNotice(context, today)
+
+            val balanceText = if (result.ok) {
+                val symbol = when (result.currency) {
+                    "CNY" -> "¥"
+                    "USD" -> "$"
+                    else -> result.currency + " "
+                }
+                symbol + String.format(Locale.US, "%.2f", result.total)
+            } else null
+
+            Notifications.notifyOffPeakStart(context, balanceText)
         }
 
         fun render(context: Context, result: BalanceApi.Result) {
@@ -50,6 +73,7 @@ class BalanceWidget : AppWidgetProvider() {
             if (ids.isEmpty()) return
 
             val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            val tier = Billing.now()
 
             for (id in ids) {
                 val views = RemoteViews(context.packageName, R.layout.widget_balance)
@@ -75,6 +99,12 @@ class BalanceWidget : AppWidgetProvider() {
                     views.setTextViewText(R.id.widget_detail, result.error ?: "读取失败")
                     views.setTextViewText(R.id.widget_updated, "")
                 }
+
+                views.setTextViewText(R.id.widget_tier, tier.text)
+                views.setTextColor(
+                    R.id.widget_tier,
+                    if (tier.offPeak) Color.parseColor("#23C07A") else Color.parseColor("#6B7789")
+                )
 
                 val openIntent = Intent(context, MainActivity::class.java)
                 val openPi = PendingIntent.getActivity(context, 0, openIntent, flags)
