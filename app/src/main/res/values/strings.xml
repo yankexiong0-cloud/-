@@ -4,4 +4,5 @@
     <string name="widget_label">DeepSeek 余额小组件</string>
     <string name="widget_empty">—</string>
     <string name="widget_hint">点开填写 API Key</string>
+    <string name="zhipu_label">智谱余额（入口）</string>
 </resources>
