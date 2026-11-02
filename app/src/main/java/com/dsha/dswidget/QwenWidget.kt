@@ -54,7 +54,12 @@ class QwenWidget : AppWidgetProvider() {
 
         fun refreshAsync(context: Context) {
             thread {
-                val result = QwenApi.fetch(Prefs.qwenAkId(context), Prefs.qwenAkSecret(context))
+                // 任何异常都要落成「卡片上的错误文案」，不能让线程静默死掉、卡片一直停在 —
+                val result = try {
+                    QwenApi.fetch(Prefs.qwenAkId(context), Prefs.qwenAkSecret(context))
+                } catch (t: Throwable) {
+                    QwenApi.Result(false, error = t.message ?: "刷新异常")
+                }
                 render(context, result)
             }
         }

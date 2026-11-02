@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 
@@ -154,7 +155,13 @@ class MainActivity : Activity() {
         }
         root.addView(status)
 
-        setContentView(root)
+        // 页面越来越长，必须能滚，否则小屏/弹键盘时下半部分会顶出去，看着像卡死
+        val scroll = ScrollView(this).apply {
+            fillViewport = true
+            isVerticalScrollBarEnabled = true
+            addView(root)
+        }
+        setContentView(scroll)
     }
 
     override fun onResume() {
