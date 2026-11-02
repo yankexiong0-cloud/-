@@ -45,6 +45,9 @@ GET https://business.aliyuncs.com/
 
 ## 说明
 
+- 签名：仓库自带 `app/keystore/debug.p12`（口令 `dswidget`），构建固定用它签名。
+  之前每次 CI 现生成随机 debug key，会导致「新版本装不上去、必须先卸载」；
+  现在起版本之间可以覆盖升级。
 - 凭据只存在 App 私有目录（SharedPreferences），不上传
 - 点左上角标题行 → 立即刷新；点数字区域 → 打开 App 或对应控制台
 - 签名算法按阿里云 RPC 规范实现，已用官方文档示例向量校验通过
