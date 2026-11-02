@@ -8,10 +8,14 @@ class RefreshReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
-            ACTION_ALARM -> BalanceWidget.refreshAsync(context.applicationContext)
+            ACTION_ALARM -> {
+                BalanceWidget.refreshAsync(context.applicationContext)
+                QwenWidget.refreshAsync(context.applicationContext)
+            }
             Intent.ACTION_BOOT_COMPLETED -> {
                 RefreshScheduler.schedule(context.applicationContext)
                 BalanceWidget.refreshAsync(context.applicationContext)
+                QwenWidget.refreshAsync(context.applicationContext)
             }
         }
     }

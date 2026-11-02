@@ -26,7 +26,7 @@ class BalanceWidget : AppWidgetProvider() {
     }
 
     override fun onDisabled(context: Context) {
-        RefreshScheduler.cancel(context.applicationContext)
+        RefreshScheduler.cancelIfNoWidgets(context.applicationContext)
     }
 
     override fun onReceive(context: Context, intent: Intent) {

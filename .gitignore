@@ -7,3 +7,6 @@ app/build/
 captures/
 .externalNativeBuild
 .cxx
+
+# 临时传图用，别再进仓库（图里有 WiFi 密码等敏感信息）
+tmp-img/

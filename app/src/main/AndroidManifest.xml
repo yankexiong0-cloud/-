@@ -59,6 +59,20 @@
                 android:resource="@xml/zhipu_widget_info" />
         </receiver>
 
+        <receiver
+            android:name=".QwenWidget"
+            android:exported="true"
+            android:label="@string/qwen_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.dsha.dswidget.QWEN_REFRESH" />
+                <action android:name="com.dsha.dswidget.QWEN_OPEN" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/qwen_widget_info" />
+        </receiver>
+
     </application>
 
 </manifest>
