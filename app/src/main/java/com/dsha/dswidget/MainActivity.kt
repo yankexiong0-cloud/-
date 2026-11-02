@@ -157,7 +157,7 @@ class MainActivity : Activity() {
 
         // 页面越来越长，必须能滚，否则小屏/弹键盘时下半部分会顶出去，看着像卡死
         val scroll = ScrollView(this).apply {
-            fillViewport = true
+            isFillViewport = true
             isVerticalScrollBarEnabled = true
             addView(root)
         }
