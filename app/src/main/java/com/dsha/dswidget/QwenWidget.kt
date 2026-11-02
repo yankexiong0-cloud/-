@@ -78,7 +78,11 @@ class QwenWidget : AppWidgetProvider() {
                     views.setTextViewText(R.id.qwen_detail, detailText(result))
                     val stamp = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
                     views.setTextViewText(R.id.qwen_updated, "更新于 $stamp")
-                    views.setTextViewText(R.id.qwen_note, "阿里云账户余额 · 点开费用中心")
+                    // 可用余额为 0 时，多半是在吃新人免费额度（免费额度不体现在账户余额里）
+                    views.setTextViewText(
+                        R.id.qwen_note,
+                        if (result.available > 0.0) "账户余额 · 点开费用中心" else "免费额度另算 · 点开看余量"
+                    )
                 } else if (!configured) {
                     views.setTextViewText(R.id.qwen_amount, "点开查看")
                     views.setTextViewText(R.id.qwen_detail, "未配置阿里云 AccessKey")
