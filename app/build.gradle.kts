@@ -11,8 +11,8 @@ android {
         applicationId = "com.dsha.dswidget"
         minSdk = 24
         targetSdk = 34
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 7
+        versionName = "1.5.1"
     }
 
     // CI 每次构建都会现场生成一个随机 debug 签名，导致版本之间签名不同、无法覆盖安装。

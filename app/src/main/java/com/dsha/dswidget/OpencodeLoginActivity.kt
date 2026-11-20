@@ -76,14 +76,19 @@ class OpencodeLoginActivity : Activity() {
             return
         }
 
+        // cookie 名是 __Host-console_session，前面有 __Host- 前缀，不能用 startsWith 匹配
         val session = cookie.split(";")
             .map { it.trim() }
-            .firstOrNull { it.startsWith("console_session=") }
-            ?.substringAfter("=")
+            .firstOrNull { it.contains("console_session=") }
+            ?.substringAfter("console_session=")
             ?.trim()
 
         if (session.isNullOrBlank()) {
-            Toast.makeText(this, "没找到 console_session，可能还没跳转完成", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                "没找到会话 cookie。当前拿到的：" + cookie.take(60),
+                Toast.LENGTH_LONG
+            ).show()
             return
         }
 
