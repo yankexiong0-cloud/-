@@ -23,6 +23,9 @@ class OpencodeLoginActivity : Activity() {
 
     private lateinit var web: WebView
 
+    /** 页面自己去请求 billing 接口时，把它的请求头原样记下来（org 就藏在这里） */
+    private var lastHeaders: Map<String, String> = emptyMap()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         title = "登录 OpenCode Console"
@@ -53,7 +56,18 @@ class OpencodeLoginActivity : Activity() {
             )
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
-            webViewClient = WebViewClient()
+            webViewClient = object : WebViewClient() {
+                override fun shouldInterceptRequest(
+                    view: WebView?,
+                    request: android.webkit.WebResourceRequest?
+                ): android.webkit.WebResourceResponse? {
+                    val u = request?.url?.toString() ?: ""
+                    if (u.contains("/console/api/billing")) {
+                        lastHeaders = request.requestHeaders
+                    }
+                    return null   // 返回 null = 不拦截，请求照常发出去
+                }
+            }
             loadUrl("https://opencode.ai/console")
         }
         root.addView(web)
@@ -66,7 +80,19 @@ class OpencodeLoginActivity : Activity() {
     }
 
     private fun captureCookie() {
-        // 先读 localStorage 里的 org（浏览器请求带的是它），再取 cookie
+        // 优先用「页面自己发过的请求头」：里面带着 x-org-id 和完整 Cookie
+        val hdrOrg = lastHeaders.entries
+            .firstOrNull { it.key.equals("x-org-id", ignoreCase = true) }
+            ?.value
+            ?.trim()
+            .orEmpty()
+
+        if (lastHeaders.isNotEmpty()) {
+            saveAll(hdrOrg)
+            return
+        }
+
+        // 没拦到就退回读 localStorage（页面还没发过 billing 请求时会走这里）
         web.evaluateJavascript(
             "(function(){try{return localStorage.getItem('opencode-console.org-id')||''}catch(e){return ''}})()"
         ) { quoted ->
@@ -86,16 +112,15 @@ class OpencodeLoginActivity : Activity() {
             return
         }
 
-        // 整串存下来（可能不止一个 cookie），org 单独存；缺了它接口会回 OrgRequired
         Prefs.setOcCookie(this, cookie)
         Prefs.setOcOrg(this, org)
         OpencodeWidget.refreshAsync(applicationContext)
         Toast.makeText(
             this,
-            if (org.isBlank()) "已保存 cookie，但没读到 org —— 余额可能仍取不到" else "cookie 与 org 已保存，正在刷新…",
+            if (org.isBlank()) "已保存 cookie，但没拿到 org —— 回页面点一下 Activity 刷新再来" else "cookie 与 org 已保存，正在刷新…",
             Toast.LENGTH_SHORT
         ).show()
-        finish()
+        if (org.isNotBlank()) finish()
     }
 
     override fun onDestroy() {
