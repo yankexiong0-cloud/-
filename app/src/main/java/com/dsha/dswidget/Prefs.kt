@@ -9,6 +9,7 @@ object Prefs {
     private const val KEY_QWEN_AK_ID = "qwen_ak_id"
     private const val KEY_QWEN_AK_SECRET = "qwen_ak_secret"
     private const val KEY_OC_COOKIE = "opencode_cookie"
+    private const val KEY_OC_ORG = "opencode_org"
 
     private fun sp(ctx: Context) = ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE)
 
@@ -39,5 +40,11 @@ object Prefs {
 
     fun setOcCookie(ctx: Context, value: String) {
         sp(ctx).edit().putString(KEY_OC_COOKIE, value.trim()).apply()
+    }
+
+    fun ocOrg(ctx: Context): String = sp(ctx).getString(KEY_OC_ORG, "") ?: ""
+
+    fun setOcOrg(ctx: Context, value: String) {
+        sp(ctx).edit().putString(KEY_OC_ORG, value.trim()).apply()
     }
 }

@@ -29,7 +29,7 @@ object OpencodeApi {
 
     private const val ENDPOINT = "https://opencode.ai/console/api/billing/status"
 
-    fun fetch(cookie: String): Result {
+    fun fetch(cookie: String, orgId: String = ""): Result {
         val raw = normalizeCookie(cookie)
         if (raw.isBlank()) return Result(false, error = "点开填 Console 会话 cookie")
 
@@ -47,12 +47,16 @@ object OpencodeApi {
                 )
                 setRequestProperty("Referer", "https://opencode.ai/console/")
                 setRequestProperty("Cookie", raw)
+                // 浏览器会把 localStorage 里的 org 作为 x-org-id 发出去，不带就回 OrgRequired
+                if (orgId.isNotBlank()) setRequestProperty("x-org-id", orgId)
             }
             val code = conn.responseCode
             val stream = if (code in 200..299) conn.inputStream else conn.errorStream
             val body = stream?.bufferedReader()?.use { it.readText() } ?: ""
 
             if (code == 401) return Result(false, error = "会话已过期，重新贴 cookie")
+            val tagEarly = try { JSONObject(body).optString("_tag") } catch (e: Exception) { "" }
+            if (tagEarly == "OrgRequired") return Result(false, error = "缺 org，重新登录一次")
             if (code == 403) return Result(false, error = "cookie 无 billing 权限")
 
             val json = try {

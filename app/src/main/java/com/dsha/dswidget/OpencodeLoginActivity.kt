@@ -66,6 +66,16 @@ class OpencodeLoginActivity : Activity() {
     }
 
     private fun captureCookie() {
+        // 先读 localStorage 里的 org（浏览器请求带的是它），再取 cookie
+        web.evaluateJavascript(
+            "(function(){try{return localStorage.getItem('opencode-console.org-id')||''}catch(e){return ''}})()"
+        ) { quoted ->
+            val org = (quoted ?: "").trim().trim('"')
+            saveAll(org)
+        }
+    }
+
+    private fun saveAll(org: String) {
         val cookie = try {
             CookieManager.getInstance().getCookie("https://opencode.ai")
         } catch (e: Exception) {
@@ -76,25 +86,15 @@ class OpencodeLoginActivity : Activity() {
             return
         }
 
-        // cookie 名是 __Host-console_session，前面有 __Host- 前缀，不能用 startsWith 匹配
-        val session = cookie.split(";")
-            .map { it.trim() }
-            .firstOrNull { it.contains("console_session=") }
-            ?.substringAfter("console_session=")
-            ?.trim()
-
-        if (session.isNullOrBlank()) {
-            Toast.makeText(
-                this,
-                "没找到会话 cookie。当前拿到的：" + cookie.take(60),
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-
-        Prefs.setOcCookie(this, session)
+        // 整串存下来（可能不止一个 cookie），org 单独存；缺了它接口会回 OrgRequired
+        Prefs.setOcCookie(this, cookie)
+        Prefs.setOcOrg(this, org)
         OpencodeWidget.refreshAsync(applicationContext)
-        Toast.makeText(this, "cookie 已保存，正在刷新余额…", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            this,
+            if (org.isBlank()) "已保存 cookie，但没读到 org —— 余额可能仍取不到" else "cookie 与 org 已保存，正在刷新…",
+            Toast.LENGTH_SHORT
+        ).show()
         finish()
     }
 

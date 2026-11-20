@@ -158,7 +158,7 @@ class MainActivity : Activity() {
         root.addView(TextView(this).apply {
             text = "OpenCode 的 API key（oc_sk_...）查不了余额，它的 billing 接口只认浏览器会话。" +
                 "没有电脑就点下面的「在应用内登录」，登录完自动读取 cookie；" +
-                "也可以手动贴 __Host-console_session 的值。cookie 过期后卡片会提示重新登录。"
+                "也可以手动贴 cookie，但手动贴会缺 org（接口要它），所以建议还是走登录按钮。"
             textSize = 12f
             setPadding(0, pad / 2, 0, pad / 2)
         })

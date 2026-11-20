@@ -51,7 +51,7 @@ class OpencodeWidget : AppWidgetProvider() {
         fun refreshAsync(context: Context) {
             thread {
                 val result = try {
-                    OpencodeApi.fetch(Prefs.ocCookie(context))
+                    OpencodeApi.fetch(Prefs.ocCookie(context), Prefs.ocOrg(context))
                 } catch (t: Throwable) {
                     OpencodeApi.Result(false, error = t.message ?: "刷新异常")
                 }
