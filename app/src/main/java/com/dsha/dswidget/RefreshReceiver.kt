@@ -11,11 +11,13 @@ class RefreshReceiver : BroadcastReceiver() {
             ACTION_ALARM -> {
                 BalanceWidget.refreshAsync(context.applicationContext)
                 QwenWidget.refreshAsync(context.applicationContext)
+                OpencodeWidget.refreshAsync(context.applicationContext)
             }
             Intent.ACTION_BOOT_COMPLETED -> {
                 RefreshScheduler.schedule(context.applicationContext)
                 BalanceWidget.refreshAsync(context.applicationContext)
                 QwenWidget.refreshAsync(context.applicationContext)
+                OpencodeWidget.refreshAsync(context.applicationContext)
             }
         }
     }

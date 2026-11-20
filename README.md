@@ -1,12 +1,13 @@
-# 余额小组件（DeepSeek / 千问 / 智谱）
+# 余额小组件（DeepSeek / 千问 / 智谱 / OpenCode）
 
-Android 原生桌面小组件，一个 App 里三个可拖到主屏的小组件：
+Android 原生桌面小组件，一个 App 里四个可拖到主屏的小组件：
 
 | 小组件 | 数据来源 | 显示 |
 |---|---|---|
 | `DEEPSEEK · 余额` | `api.deepseek.com/user/balance`（API Key） | 真实余额 + 计费时段 |
 | `QWEN · 余额` | 阿里云费用中心 `QueryAccountBalance`（AccessKey） | 真实可用余额 / 未配置时是入口卡片 |
 | `智谱 · 余额` | 官方没有公开余额接口 | 纯入口卡片，点开财务页 |
+| `OPENCODE · 余额` | `opencode.ai/console/api/billing/status`（**会话 cookie**） | 剩余美元余额 / 未配置时是入口卡片 |
 
 刷新间隔 15 分钟（Android 的闹钟会被系统合并，实际可能略晚）。
 
@@ -43,6 +44,28 @@ GET https://business.aliyuncs.com/
 不填也能用：小组件会变成「点开查看」的入口卡片，点一下直达百炼控制台。
 配了之后：显示 `¥可用余额`，明细行是「现金 x · 信控 y」，点数字跳费用中心。
 
+## OpenCode 余额说明
+
+OpenCode 的 API key（`oc_sk_...`）**只能调模型，查不了余额**——billing 接口只认浏览器会话：
+
+```
+GET https://opencode.ai/console/api/billing/status
+Cookie: __Host-console_session=<值>
+→ { balanceMicroCents, availableMicroCents, billingMode, ... }   金额单位 micro-cents（1 USD = 1e8）
+```
+
+带 `Bearer oc_sk_...` 访问同一地址会得到 `403 {"_tag":"Forbidden"}`。
+
+所以要填 **cookie**：
+
+1. 电脑上登录 <https://opencode.ai/console>
+2. F12 → Application / 存储 → Cookies → `https://opencode.ai`
+3. 复制 `__Host-console_session` 的值（很长一串）
+4. 粘进 App 的「OpenCode Console 余额」输入框 → 保存
+
+过期了（一般几天到几周）卡片会显示「会话已过期，重新贴 cookie」，重贴即可。
+只贴值就行，App 会自动补 `__Host-console_session=` 前缀。
+
 ## 说明
 
 - 签名：仓库自带 `app/keystore/debug.p12`（口令 `dswidget`），构建固定用它签名。
@@ -65,6 +88,8 @@ app/src/main/java/com/dsha/dswidget/
   QwenApi.kt            阿里云 QueryAccountBalance
   AliyunSign.kt         阿里云 RPC 签名（HMAC-SHA1）
   ZhipuWidget.kt        智谱入口卡片
+  OpencodeWidget.kt     OpenCode 小组件
+  OpencodeApi.kt        Console billing/status（cookie）
   RefreshScheduler.kt   AlarmManager 定时
   RefreshReceiver.kt    闹钟/开机广播
   Prefs.kt              凭据存储

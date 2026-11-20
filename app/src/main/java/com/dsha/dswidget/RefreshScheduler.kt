@@ -41,7 +41,8 @@ object RefreshScheduler {
         val ds = mgr.getAppWidgetIds(ComponentName(context, BalanceWidget::class.java))
         val qwen = mgr.getAppWidgetIds(ComponentName(context, QwenWidget::class.java))
         val zhipu = mgr.getAppWidgetIds(ComponentName(context, ZhipuWidget::class.java))
-        return ds.isNotEmpty() || qwen.isNotEmpty() || zhipu.isNotEmpty()
+        val oc = mgr.getAppWidgetIds(ComponentName(context, OpencodeWidget::class.java))
+        return ds.isNotEmpty() || qwen.isNotEmpty() || zhipu.isNotEmpty() || oc.isNotEmpty()
     }
 
     /** 只有桌面上一个余额小组件都不剩了才停掉定时刷新 */

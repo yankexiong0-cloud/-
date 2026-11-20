@@ -20,6 +20,7 @@ class MainActivity : Activity() {
     private lateinit var keyInput: EditText
     private lateinit var qwenAkIdInput: EditText
     private lateinit var qwenAkSecretInput: EditText
+    private lateinit var ocCookieInput: EditText
     private lateinit var status: TextView
     private lateinit var tierView: TextView
 
@@ -147,8 +148,61 @@ class MainActivity : Activity() {
             }
         })
 
+        // ── OpenCode Console ─────────────────────────────
+        root.addView(TextView(this).apply {
+            text = "OpenCode Console 余额"
+            textSize = 18f
+            setPadding(0, pad, 0, 0)
+        })
+
+        root.addView(TextView(this).apply {
+            text = "OpenCode 的 API key（oc_sk_...）查不了余额，它的 billing 接口只认浏览器会话。" +
+                "没有电脑就点下面的「在应用内登录」，登录完自动读取 cookie；" +
+                "也可以手动贴 __Host-console_session 的值。cookie 过期后卡片会提示重新登录。"
+            textSize = 12f
+            setPadding(0, pad / 2, 0, pad / 2)
+        })
+
+        root.addView(Button(this).apply {
+            text = "在应用内登录并获取 cookie"
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setOnClickListener {
+                startActivity(android.content.Intent(this@MainActivity, OpencodeLoginActivity::class.java))
+            }
+        })
+
+        ocCookieInput = EditText(this).apply {
+            hint = "__Host-console_session=..."
+            inputType = InputType.TYPE_CLASS_TEXT
+            setText(Prefs.ocCookie(this@MainActivity))
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        root.addView(ocCookieInput)
+
+        root.addView(Button(this).apply {
+            text = "保存 OpenCode cookie 并刷新"
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setOnClickListener {
+                Prefs.setOcCookie(this@MainActivity, ocCookieInput.text.toString())
+                Toast.makeText(this@MainActivity, "OpenCode cookie 已保存，正在刷新…", Toast.LENGTH_SHORT).show()
+                RefreshScheduler.schedule(this@MainActivity)
+                OpencodeWidget.refreshAsync(this@MainActivity)
+                status.text = "OpenCode 已保存。等几秒后回桌面看「OPENCODE · 余额」小组件。"
+                tierView.text = tierText()
+            }
+        })
+
         status = TextView(this).apply {
-            text = "添加小组件：长按桌面空白 → 小部件 → 余额小组件（DeepSeek / 千问 / 智谱）"
+            text = "添加小组件：长按桌面空白 → 小部件 → 余额小组件（DeepSeek / 千问 / 智谱 / OpenCode）"
             textSize = 12f
             gravity = Gravity.START
             setPadding(0, pad, 0, 0)

@@ -24,6 +24,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".OpencodeLoginActivity"
+            android:exported="false"
+            android:label="登录 OpenCode Console"
+            android:windowSoftInputMode="adjustResize" />
+
         <receiver
             android:name=".BalanceWidget"
             android:exported="true"
@@ -72,6 +78,20 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/qwen_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".OpencodeWidget"
+            android:exported="true"
+            android:label="@string/opencode_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.dsha.dswidget.OPENCODE_REFRESH" />
+                <action android:name="com.dsha.dswidget.OPENCODE_OPEN" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/opencode_widget_info" />
         </receiver>
 
     </application>

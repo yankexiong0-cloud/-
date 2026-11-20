@@ -7,4 +7,6 @@
     <string name="zhipu_label">智谱余额（入口）</string>
     <string name="qwen_label">千问余额（阿里云）</string>
     <string name="qwen_hint">点开填阿里云 AccessKey</string>
+    <string name="opencode_label">OpenCode 余额</string>
+    <string name="opencode_hint">点开填 Console 会话 cookie</string>
 </resources>
