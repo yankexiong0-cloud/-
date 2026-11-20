@@ -61,9 +61,10 @@ class OpencodeLoginActivity : Activity() {
                     view: WebView?,
                     request: android.webkit.WebResourceRequest?
                 ): android.webkit.WebResourceResponse? {
-                    val u = request?.url?.toString() ?: ""
+                    val req = request ?: return null
+                    val u = req.url?.toString() ?: ""
                     if (u.contains("/console/api/billing")) {
-                        lastHeaders = request.requestHeaders
+                        lastHeaders = req.requestHeaders
                     }
                     return null   // 返回 null = 不拦截，请求照常发出去
                 }
